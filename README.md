@@ -23,20 +23,17 @@ The **AI Crisis Decision System** is a full-stack, predictive multi-agent applic
      
   
 <details>
-<summary>📋 View all 12 modules</summary>
+<summary>📋 View all modules</summary>
+<br>
 
 🔍 Analyze — Ingests raw crisis data and performs initial macroeconomic and geopolitical impact extraction
 🧪 Simulate — Multi-agent event simulator that models deep hypothetical "what-if" disruption scenarios
 📈 Live Prices — Real-time integration with Yahoo Finance to fetch live commodity and index fluctuations triggered by crises
 📰 News Feed — Real-time global event ingestion via NewsAPI to automatically track breaking events
-🚢 Supply Chain Outage Predictor — Calculates real-world shipping delays, alternate routing fees, and commodity price spikes for choke-point disruptions
 🕐 History — Local comprehensive database of previous crises and their validated resolutions
 🌍 Country Impact — Deep dive into national GDP damage using live population and trade data from the World Bank API
 🔔 Alerts — Automated threshold monitors that notify personnel when regional threats cross predefined risk levels
-📊 AI vs Reality Tracker — Tracks former predictions against actual market outcomes 30 days later with a live accuracy dashboard
-⛓️ Chain Reaction Simulator — Models 1st, 2nd, and 3rd order economic impacts globally from factory halts or border tensions
 🏆 Compare Countries — Measures macroeconomic resiliency of nations against identical crisis parameters side-by-side
-⛺ Humanitarian Resource & Refugee Allocator — Geographic migration forecaster with UN-verified demographics (UNHCR, WHO, IOM, ReliefWeb) and SPHERE Standards fallback for 48-hour logistics modeling
 
 </details>
 
