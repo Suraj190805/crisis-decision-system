@@ -24,17 +24,16 @@ The **AI Crisis Decision System** is a full-stack, predictive multi-agent applic
   
 <details>
 <summary>📋 View all modules</summary>
-<br>
-
-🔍 Analyze — Ingests raw crisis data and performs initial macroeconomic and geopolitical impact extraction
-🧪 Simulate — Multi-agent event simulator that models deep hypothetical "what-if" disruption scenarios
-📈 Live Prices — Real-time integration with Yahoo Finance to fetch live commodity and index fluctuations triggered by crises
-📰 News Feed — Real-time global event ingestion via NewsAPI to automatically track breaking events
-🕐 History — Local comprehensive database of previous crises and their validated resolutions
-🌍 Country Impact — Deep dive into national GDP damage using live population and trade data from the World Bank API
-🔔 Alerts — Automated threshold monitors that notify personnel when regional threats cross predefined risk levels
-🏆 Compare Countries — Measures macroeconomic resiliency of nations against identical crisis parameters side-by-side
-
+<ul>
+  <li>🔍 <b>Analyze</b> — Ingests raw crisis data and performs initial macroeconomic and geopolitical impact extraction</li>
+  <li>🧪 <b>Simulate</b> — Multi-agent event simulator that models deep hypothetical "what-if" disruption scenarios</li>
+  <li>📈 <b>Live Prices</b> — Real-time integration with Yahoo Finance to fetch live commodity and index fluctuations triggered by crises</li>
+  <li>📰 <b>News Feed</b> — Real-time global event ingestion via NewsAPI to automatically track breaking events</li>
+  <li>🕐 <b>History</b> — Local comprehensive database of previous crises and their validated resolutions</li>
+  <li>🌍 <b>Country Impact</b> — Deep dive into national GDP damage using live population and trade data from the World Bank API</li>
+  <li>🔔 <b>Alerts</b> — Automated threshold monitors that notify personnel when regional threats cross predefined risk levels</li>
+  <li>🏆 <b>Compare Countries</b> — Measures macroeconomic resiliency of nations against identical crisis parameters side-by-side</li>
+</ul>
 </details>
 
 ---
