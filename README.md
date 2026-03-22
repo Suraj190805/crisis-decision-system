@@ -20,6 +20,8 @@ The **AI Crisis Decision System** is a full-stack, predictive multi-agent applic
    - Highly robust geographic migration forecaster for conflict zones and natural disasters.
    - **Fact-Checked Demographics**: Scrapes verified UN sources (UNHCR, WHO, IOM, ReliefWeb) and News articles to predict accurate population displacement volumes.
    - **Logistics Modeling**: Computes exact 48-hour physical requirements (medical kits, tents, water liters) and host-country financial strain, gracefully falling back to historical *SPHERE Humanitarian Standards* if live internet queries fail.
+  
+AND MANY MORE..
 
 ---
 
