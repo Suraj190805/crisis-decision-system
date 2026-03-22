@@ -1,0 +1,21 @@
+{
+  "python.defaultInterpreterPath": "./venv/bin/python",
+  "python.analysis.extraPaths": [
+    "./venv/lib/python3.11/site-packages",
+    "."
+  ],
+  "pyre2.enable": false,
+  "pyre2.enabled": false,
+  "python.analysis.typeCheckingMode": "off",
+  "python.analysis.diagnosticMode": "openFilesOnly",
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportMissingImports": "none",
+    "reportMissingModuleSource": "none",
+    "reportGeneralTypeIssues": "none",
+    "reportOptionalMemberAccess": "none",
+    "reportArgumentType": "none"
+  },
+  "python.linting.enabled": false,
+  "gemini.typeChecking.python.enable": false,
+  "gemini.codeAssist.typeChecking.enable": false
+}
