@@ -127,12 +127,30 @@ def get_oil_price() -> str:
 def get_market_data(ticker: str) -> str:
     return get_ticker_price(ticker, ticker)
 
+_ticker_price_cache = {}
+TICKER_CACHE_TTL = 180  # 3 minutes
+
 def get_ticker_price(ticker: str, label: str) -> str:
+    import time
+    now = time.time()
+    if ticker in _ticker_price_cache:
+        cached_time, cached_val = _ticker_price_cache[ticker]
+        if now - cached_time < TICKER_CACHE_TTL:
+            return f"{label}: {cached_val}"
+
     try:
         t = yf.Ticker(ticker)
-        price = t.fast_info['last_price']
-        return f"{label}: ${price:.2f}"
-    except:
+        price = t.fast_info.get('last_price')
+        if price is None:
+            hist = t.history(period="1d")
+            price = float(hist['Close'].iloc[-1]) if not hist.empty else None
+
+        if price is not None:
+            formatted = f"${price:.2f}"
+            _ticker_price_cache[ticker] = (now, formatted)
+            return f"{label}: {formatted}"
+        return f"{label}: data unavailable"
+    except Exception as e:
         return f"{label}: data unavailable"
 
 def get_region_market_data(region: str) -> str:

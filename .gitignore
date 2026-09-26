@@ -3,15 +3,25 @@ venv/
 env/
 .env
 
-# Python Cache
+# Python Cache & Tests
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+.pytest_cache/
 
-# Node
+# Databases
+*.db*
+*.sqlite*
+
+# Node / Frontend
 node_modules/
 .next/
+dist/
+build/
 
-# Logs and Tests
+# Logs and Outputs
 *.log
 test_output*.json
 .DS_Store
+uploads/
+.vscode/

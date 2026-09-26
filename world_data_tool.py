@@ -60,12 +60,22 @@ def _fetch_indicator(country_code: str, indicator: str) -> dict | None:
         return None
 
 
+_wb_cache = {}
+WB_CACHE_TTL = 86400  # 24 hours
+
 def get_world_bank_data(region: str) -> str:
     """
-    Fetch key economic indicators for a region from World Bank.
+    Fetch key economic indicators for a region from World Bank with 24h caching.
     Returns a formatted text summary for AI agents to use.
     """
+    import time
     region_lower = region.lower().strip()
+    now = time.time()
+
+    if region_lower in _wb_cache:
+        cached_time, cached_val = _wb_cache[region_lower]
+        if now - cached_time < WB_CACHE_TTL:
+            return cached_val
 
     # Match region to country code
     country_code = None
@@ -83,10 +93,14 @@ def get_world_bank_data(region: str) -> str:
             results.append(f"  - {label}: {data['value']} ({data['year']})")
 
     if not results:
-        return f"World Bank data for {region}: unavailable"
+        res = f"World Bank data for {region}: unavailable"
+        _wb_cache[region_lower] = (now, res)
+        return res
 
     header = f"WORLD BANK ECONOMIC INDICATORS for {region.upper()} ({country_code}):\n"
-    return header + "\n".join(results)
+    res = header + "\n".join(results)
+    _wb_cache[region_lower] = (now, res)
+    return res
 
 
 def get_multi_region_data(regions: list[str]) -> str:

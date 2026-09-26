@@ -1,0 +1,139 @@
+================================================================================
+GLOBAL CRISIS DECISION SYSTEM (GCDS) — PROJECT OVERVIEW & ARCHITECTURE
+================================================================================
+
+1. PROJECT PURPOSE & WHAT IT DOES
+--------------------------------------------------------------------------------
+The Global Crisis Decision System (GCDS) is an end-to-end, multi-agent AI 
+intelligence platform designed to predict, analyze, and synthesize geopolitical, 
+macroeconomic, supply chain, and humanitarian crises in real time.
+
+Instead of relying on a single static AI prompt, the system deploys a specialized 
+"swarm" of autonomous CrewAI agents that collaborate, cross-examine data, and 
+consult live external authoritative sources (news feeds, financial markets, World 
+Bank economic statistics, and live web search) to produce actionable executive 
+dossiers and tactical response playbooks.
+
+Core Capabilities:
+- Threat Analysis Engine: Ingests real-world geopolitical triggers and runs a 
+  5-agent consensus crew (Economic, Trade, Energy, Social/Humanitarian, and 
+  Decision Coordinator) to evaluate multi-sector impacts.
+- Photorealistic 3D Threat Map: Interactive 3D Earth visualization mapped with 
+  NASA Blue Marble satellite textures, atmospheric clouds, and real-time crisis 
+  hotspots (Ukraine, Gaza, Red Sea, Sudan, Taiwan Strait, Hormuz, etc.) with 
+  1-click direct AI threat analysis trigger.
+- Counterfactual Scenario Simulator: Allows decision-makers to stress-test 
+  hypothetical "what-if" events with custom magnitude deltas and target regions.
+- Chain Reaction Cascade Model: Computes 1st-order (0-14 days), 2nd-order 
+  (1-3 months), and 3rd-order (6+ months) systemic domino effects.
+- Maritime Chokepoint & Supply Chain Predictor: Calculates vessel rerouting lag 
+  (e.g. Cape of Good Hope detours), freight rate increases, and daily trade loss 
+  for critical waterways (Suez, Bab el-Mandeb, Hormuz, Panama, Malacca).
+- Humanitarian Resource & Refugee Allocator: Predicts displaced population figures 
+  and physical 48-hour emergency logistics (potable water liters, calorie rations, 
+  winterized tents, IEHK medkits) adhering to UN SPHERE humanitarian standards.
+- AI vs. Reality Performance Tracker: An anti-hallucination audit engine that 
+  persists past AI forecasts and compares them against realized market outcomes 
+  30 days later to track accuracy and prevent drift.
+- Country Vulnerability & Resilience Matrix: World Bank-powered national impact 
+  assessments and side-by-side resilience benchmarking across multiple nations.
+- Real-Time Market Tickers & News Stream: Live price fluctuations via Yahoo 
+  Finance and global investigative news coverage via NewsAPI.
+- Automated Alert Monitors & Email Dispatch: Background monitors tracking hard 
+  commodity/risk thresholds with automated notifications.
+- Executive PDF Dossier Export: Automatically formats and compiles reports into 
+  downloadable, publication-ready PDF intelligence briefs.
+
+
+2. COMPLETE TECHNOLOGY STACK
+--------------------------------------------------------------------------------
+
+A. BACKEND ARCHITECTURE
+- Language & Runtime: Python 3.10+
+- Web Framework: FastAPI (high-performance asynchronous REST API)
+- ASGI Server: Uvicorn
+- Data Validation: Pydantic v2
+- Multi-Agent Orchestration: CrewAI & LangChain
+  * Multi-agent crews with dedicated roles, goals, and backstories.
+  * Hierarchical & sequential task delegation with cross-validation.
+- Large Language Model (LLM) Inferencing:
+  * Groq Cloud API running Llama-3.3-70b-versatile (ultra-fast inference for 
+    multi-agent recursive synthesis).
+  * Configurable via LiteLLM.
+- Database & Persistence:
+  * SQLite (`crisis.db`) via SQLAlchemy ORM.
+  * Stores historical crisis events, predicted vs. actual outcomes, market 
+    snapshots, and threshold alerts.
+- PDF Document Generation: ReportLab (custom styling, tables, gauges, and headers).
+- Background Monitoring & Notifications: Python smtplib / Email alert dispatch.
+
+B. DATA TOOLS & EXTERNAL INTEGRATIONS
+- Financial Market Feeds: Yahoo Finance (`yfinance`) for live commodity prices 
+  (Brent Crude, Natural Gas, Gold, Wheat, TSMC, Forex).
+- Global News Ingestion: NewsAPI (`news_tool.py`) for live journalism dispatches.
+- Autonomous Web Search: DuckDuckGo Search (`ddgs` / `duckduckgo-search`) for 
+  autonomous fact-checking by agents.
+- Sovereign Macroeconomic Data: World Bank Open Data API (`world_data_tool.py`) 
+  for national GDP, population, and trade-to-GDP ratios.
+
+C. FRONTEND CLIENT (crisis-frontend)
+- Framework: Next.js 16 (App Router, Turbopack)
+- Core Library: React 19
+- Styling & Design System:
+  * Tailwind CSS 4 + custom CSS design tokens (`globals.css`).
+  * Modern, light gray executive aesthetic (Slate 900 typography, soft Slate 50 
+    backgrounds, pure white cards, refined borders, and accessible inputs).
+- 3D Graphics & Visualization:
+  * Three.js (`three`)
+  * React Three Fiber (`@react-three/fiber`)
+  * React Three Drei (`@react-three/drei`)
+  * High-resolution NASA Blue Marble satellite surface map + cloud layer textures.
+  * Smooth camera pivot tweening, daylight illumination, and pulsing crisis pins.
+- Charting & Metrics: Recharts (responsive intraday and historical trajectory curves).
+- Icons: Lucide React (over 40 specialized operational icons).
+- HTTP Client: Axios (REST API communication with the FastAPI backend).
+
+
+3. DIRECTORY & FILE STRUCTURE
+--------------------------------------------------------------------------------
+crisis-decision-system/
+├── main.py                  # Primary FastAPI application with all 13 REST endpoints
+├── database.py              # SQLite models (Event, Alert, Prediction, MarketSnapshot)
+├── financial_tool.py        # Yahoo Finance live market data & commodity extractors
+├── news_tool.py             # NewsAPI real-time news retrieval
+├── world_data_tool.py       # World Bank API indicators (GDP, population, trade)
+├── search_tool.py           # DuckDuckGo search integration for agent browsing
+├── pdf_generator.py         # ReportLab PDF compiler for executive intelligence dossiers
+├── email_alert.py           # Automated SMTP email notification dispatcher
+├── requirements.txt         # Python backend package dependencies
+├── crisis.db                # Persistent SQLite database
+├── explanation.txt          # This architecture and project overview document
+└── crisis-frontend/         # Next.js frontend client
+    ├── package.json         # Node dependencies (Next 16, React 19, Three.js, Recharts)
+    ├── public/
+    │   └── textures/        # High-res NASA Blue Marble & Earth clouds textures
+    └── src/
+        ├── app/
+        │   ├── globals.css  # Refined light gray design system and utility classes
+        │   ├── layout.js    # Root layout and metadata configuration
+        │   └── page.js      # Main operational command center & view router
+        └── components/
+            ├── Header.jsx         # Executive command bar, UTC clock, status, PDF export
+            ├── LiveTicker.jsx     # Real-time financial market & chokepoint telemetry ribbon
+            ├── Sidebar.jsx        # Categorized workspace navigation suite
+            ├── CrisisGlobe.jsx    # Photorealistic 3D Earth canvas & hotspot companion deck
+            └── modules/           # 13 Dedicated Intelligence Modules
+                ├── AnalyzeModule.jsx        # Threat Analysis Engine
+                ├── SimulateModule.jsx       # Counterfactual Scenario Simulator
+                ├── ChainReactionModule.jsx  # Nth-order cascade tree model
+                ├── SupplyChainModule.jsx    # Maritime chokepoints & freight predictor
+                ├── PricesModule.jsx         # Live Yahoo Finance market tickers & charts
+                ├── NewsModule.jsx           # Global NewsAPI intelligence wire
+                ├── RefugeesModule.jsx       # UN SPHERE humanitarian aid allocator
+                ├── CountryModule.jsx        # World Bank sovereign vulnerability deep-dive
+                ├── CompareModule.jsx        # Cross-national macro resilience matrix
+                ├── TrackerModule.jsx        # AI vs. Reality accuracy audit engine
+                ├── AlertsModule.jsx         # Background threshold monitors
+                ├── HistoryModule.jsx        # Database mission archive & precedent viewer
+                └── ReportVisualizer.jsx     # Executive dossier presentation component
+================================================================================
