@@ -198,8 +198,8 @@ function HotspotMarker({ hotspot, radius, isSelected, isHovered, onSelect, onHov
   );
   const color = SEVERITY_CONFIG[hotspot.severity]?.color || '#ef4444';
 
-  useFrame(({ clock }) => {
-    const t = clock.getElapsedTime();
+  useFrame(() => {
+    const t = performance.now() * 0.001;
     const pulse = Math.sin(t * 3.5 + hotspot.lat * 0.2) * 0.5 + 0.5;
 
     if (meshRef.current) {
@@ -455,7 +455,13 @@ export default function CrisisGlobe({ onSelectPreset }) {
             <Canvas
               camera={{ position: [0, 0, 2.6], fov: 45 }}
               dpr={[1, 2]}
-              gl={{ antialias: true, alpha: true }}
+              gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+              onCreated={({ gl }) => {
+                gl.domElement.addEventListener('webglcontextlost', (e) => {
+                  e.preventDefault();
+                  console.warn('WebGL context lost, prevented crash');
+                }, false);
+              }}
             >
               <PhotorealisticEarth
                 radius={1.0}

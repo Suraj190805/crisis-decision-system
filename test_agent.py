@@ -1,11 +1,22 @@
 import os
 from crewai import Agent, Task, Crew, LLM, Process
 from dotenv import load_dotenv
+import litellm
 
 load_dotenv()
 
+# Strip 'cache_breakpoint' added by CrewAI before forwarding to Groq API
+_original_litellm_completion = litellm.completion
+def _patched_litellm_completion(*args, **kwargs):
+    if "messages" in kwargs and isinstance(kwargs["messages"], list):
+        for msg in kwargs["messages"]:
+            if isinstance(msg, dict):
+                msg.pop("cache_breakpoint", None)
+    return _original_litellm_completion(*args, **kwargs)
+litellm.completion = _patched_litellm_completion
+
 llm = LLM(
-    model="groq/llama-3.3-70b-versatile",
+    model=os.getenv("GROQ_MODEL_ID", "groq/openai/gpt-oss-120b"),
     api_key=os.getenv("GROQ_API_KEY")
 )
 

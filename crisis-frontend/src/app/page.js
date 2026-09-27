@@ -180,12 +180,10 @@ export default function Home() {
 
           {/* Module Router */}
           <div className="animate-fade">
-            {/* 🌍 3D Threat Map with Real Photorealistic Earth */}
-            {activeTab === 'globe' && (
-              <div className="space-y-6">
-                <CrisisGlobe onSelectPreset={handleGlobeSelectPreset} />
-              </div>
-            )}
+            {/* 🌍 3D Threat Map with Real Photorealistic Earth (kept mounted to prevent WebGL context loss) */}
+            <div className="space-y-6" style={{ display: activeTab === 'globe' ? 'block' : 'none' }}>
+              <CrisisGlobe onSelectPreset={handleGlobeSelectPreset} />
+            </div>
 
             {activeTab === 'analyze' && (
               <AnalyzeModule

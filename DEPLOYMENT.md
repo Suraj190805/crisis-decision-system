@@ -18,7 +18,7 @@ In your Railway project settings -> **Variables**, add:
 | Variable | Description | Example / Default |
 | :--- | :--- | :--- |
 | `GROQ_API_KEY` | **(Required)** Your Groq API key from [console.groq.com](https://console.groq.com) | `gsk_...` |
-| `GROQ_MODEL_ID` | Groq Model ID | `groq/qwen-qwq-32b` or `groq/llama-3.1-70b-versatile` |
+| `GROQ_MODEL_ID` | **(Required/Recommended)** Active Groq Model ID | `groq/openai/gpt-oss-120b` or `groq/qwen/qwen3.8-27b` |
 | `NEWS_API_KEY` | *(Optional)* NewsAPI key from [newsapi.org](https://newsapi.org) | `your_news_key` |
 | `DATABASE_URL` | *(Optional)* SQLite by default (`sqlite:///crisis.db`). Or connect Railway PostgreSQL | `sqlite:///crisis.db` |
 | `PORT` | Set automatically by Railway | `8000` |

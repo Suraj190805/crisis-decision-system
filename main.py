@@ -1,19 +1,34 @@
 import os
-from fastapi import FastAPI
+import asyncio
+import logging
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response, JSONResponse
 from pydantic import BaseModel
 from crewai import Agent, Task, Crew, LLM, Process
 from dotenv import load_dotenv
+import litellm
 from news_tool import get_news, get_targeted_news
 from financial_tool import get_oil_price, get_market_data, get_region_market_data, get_scenario_market_data, get_prices_for_region
 from world_data_tool import get_world_bank_data
 from database import save_event, get_past_events, get_similar_past_events, init_db, create_alert, get_alerts, trigger_alert, delete_alert, reset_alert, save_market_snapshots, get_trackable_predictions
 from pdf_generator import generate_crisis_report_pdf
-from fastapi.responses import Response
 from email_alert import send_alert_email
 load_dotenv()
+
 # Initialize DB on startup
 init_db()
+
+# ─── LITELLM / GROQ COMPATIBILITY PATCH ──────────────────────────
+# Strip 'cache_breakpoint' added by CrewAI before forwarding to Groq API
+_original_litellm_completion = litellm.completion
+def _patched_litellm_completion(*args, **kwargs):
+    if "messages" in kwargs and isinstance(kwargs["messages"], list):
+        for msg in kwargs["messages"]:
+            if isinstance(msg, dict):
+                msg.pop("cache_breakpoint", None)
+    return _original_litellm_completion(*args, **kwargs)
+litellm.completion = _patched_litellm_completion
 
 app = FastAPI(title="Crisis Decision System")
 
@@ -21,30 +36,74 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["*"],
-    allow_headers=["*"]
+    allow_headers=["*"],
+    allow_credentials=False
 )
 
-llm = LLM(
-    model=os.getenv("GROQ_MODEL_ID", "groq/qwen-qwq-32b"),
-    api_key=os.getenv("GROQ_API_KEY")
-)
+# ─── GLOBAL EXCEPTION HANDLERS WITH CORS ────────────────────────
+# Guarantee Access-Control-Allow-Origin is sent even during unhandled exceptions or 500 errors
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "*",
+    "Access-Control-Allow-Headers": "*",
+}
 
-# ─── STARTUP VALIDATION ─────────────────────────────────────────
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+        headers=CORS_HEADERS
+    )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    import traceback
+    logging.error(f"[GCDS Unhandled Exception] {exc}\n{traceback.format_exc()}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc), "error": type(exc).__name__},
+        headers=CORS_HEADERS
+    )
+
+# ─── MODEL CONFIGURATION & VALIDATION ────────────────────────────
+DEFAULT_MODEL = "groq/openai/gpt-oss-120b"
 DEPRECATED_MODELS = {
     "llama-3.3-70b-versatile",
     "groq/llama-3.3-70b-versatile",
     "llama-3.1-70b-versatile",
     "groq/llama-3.1-70b-versatile",
+    "qwen-qwq-32b",
+    "groq/qwen-qwq-32b",
 }
+
+def get_configured_model():
+    model = os.getenv("GROQ_MODEL_ID", DEFAULT_MODEL)
+    if model in DEPRECATED_MODELS:
+        return DEFAULT_MODEL
+    return model
+
+llm = LLM(
+    model=get_configured_model(),
+    api_key=os.getenv("GROQ_API_KEY")
+)
+
+async def run_crew(crew: Crew):
+    """Safely runs CrewAI in a worker thread to prevent event loop collisions and checks API key."""
+    if not os.getenv("GROQ_API_KEY"):
+        raise HTTPException(
+            status_code=503,
+            detail="GROQ_API_KEY is not configured on the server. Please add GROQ_API_KEY in your Railway project environment variables."
+        )
+    return await asyncio.to_thread(crew.kickoff)
 
 @app.on_event("startup")
 async def validate_model_configuration():
-    configured_model = os.getenv("GROQ_MODEL_ID", "groq/qwen-qwq-32b")
+    configured_model = os.getenv("GROQ_MODEL_ID", DEFAULT_MODEL)
     if configured_model in DEPRECATED_MODELS:
-        import logging
         logging.warning(
             f"[GCDS Warning] Configured GROQ_MODEL_ID '{configured_model}' is deprecated/retired. "
-            f"Please update .env to use 'groq/qwen-qwq-32b' or 'openai/gpt-oss-120b'."
+            f"Automatically falling back to active model '{DEFAULT_MODEL}'."
         )
 
 # ─── SYSTEM HEALTH & DATA FRESHNESS ──────────────────────────────
@@ -54,7 +113,7 @@ _data_freshness = {
     "news": {"status": "unknown", "last_updated": None},
     "world_bank": {"status": "cached", "last_updated": None},
     "ai_analysis": {"status": "idle", "last_updated": None},
-    "llm": {"status": "unknown", "model": os.getenv("GROQ_MODEL_ID", "groq/qwen-qwq-32b")},
+    "llm": {"status": "unknown", "model": get_configured_model()},
 }
 
 def update_freshness(source: str, status: str = "live"):
@@ -91,7 +150,7 @@ async def health_check():
 
     # Check LLM
     try:
-        model_id = os.getenv("GROQ_MODEL_ID", "groq/qwen-qwq-32b")
+        model_id = get_configured_model()
         checks["llm"] = {"status": "configured", "model": model_id, "api_key_set": bool(os.getenv("GROQ_API_KEY"))}
     except Exception as e:
         checks["llm"] = {"status": "error", "error": str(e)}
@@ -346,7 +405,7 @@ async def analyze_event(input: EventInput):
 
     crew = build_crew(input.event + past_context, region="global")
     update_freshness("ai_analysis", "processing")
-    result = crew.kickoff()
+    result = await run_crew(crew)
     update_freshness("ai_analysis", "complete")
 
     # Parse and extract structured response
@@ -405,7 +464,7 @@ async def simulate_scenario(input: ScenarioInput):
     region_markets = get_region_market_data(input.region)
     scenario_markets = get_scenario_market_data(input.scenario)
     crew = build_crew(event + past_context, region=input.region)
-    result = crew.kickoff()
+    result = await run_crew(crew)
 
     event_id = None
     parsed = {}
@@ -850,7 +909,7 @@ async def country_impact(input: CountryImpactInput):
     )
 
     crew = Crew(agents=[country_agent], tasks=[task], process=Process.sequential)
-    result = crew.kickoff()
+    result = await run_crew(crew)
 
     try:
         clean = str(result).replace("```json", "").replace("```", "").strip()
@@ -1158,7 +1217,7 @@ async def chain_reaction(input: ChainReactionInput):
         tasks=[research_task, model_task, validator_task],
         process=Process.sequential
     )
-    result = crew.kickoff()
+    result = await run_crew(crew)
 
     # Parse and save
     parsed = None
@@ -1358,7 +1417,7 @@ async def supply_chain(input: SupplyChainInput):
         tasks=[logistics_task, cost_task, impact_task, auditor_task],
         process=Process.sequential
     )
-    result = crew.kickoff()
+    result = await run_crew(crew)
 
     parsed = None
     try:
@@ -1522,7 +1581,7 @@ async def refugee_allocation(input: RefugeeInput):
         tasks=[migration_task, supply_task, finance_task, auditor_task],
         process=Process.sequential
     )
-    result = crew.kickoff()
+    result = await run_crew(crew)
 
     parsed = None
     try:
@@ -1772,7 +1831,7 @@ async def compare_countries(input: CompareCountriesInput):
         tasks=[research_task, analyst_task, validator_task],
         process=Process.sequential
     )
-    result = crew.kickoff()
+    result = await run_crew(crew)
 
     # Parse and save
     parsed = None
