@@ -67,7 +67,9 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 # ─── MODEL CONFIGURATION & VALIDATION ────────────────────────────
-DEFAULT_MODEL = "groq/openai/gpt-oss-120b"
+# groq/qwen/qwen3.8-27b — fast, generous TPM limits, great for free-tier accounts
+# groq/openai/gpt-oss-120b — more powerful but strict 8k TPM on free tier
+DEFAULT_MODEL = "groq/qwen/qwen3.8-27b"
 DEPRECATED_MODELS = {
     "llama-3.3-70b-versatile",
     "groq/llama-3.3-70b-versatile",
@@ -85,7 +87,8 @@ def get_configured_model():
 
 llm = LLM(
     model=get_configured_model(),
-    api_key=os.getenv("GROQ_API_KEY")
+    api_key=os.getenv("GROQ_API_KEY"),
+    max_tokens=1024  # Cap per-call output to stay within free-tier TPM limits
 )
 
 async def run_crew(crew: Crew):
