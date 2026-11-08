@@ -1,6 +1,9 @@
 # 🌍 AI Crisis Decision System
 
 The **AI Crisis Decision System** is a full-stack, predictive multi-agent application built to forecast geopolitical, economic, supply chain, and humanitarian crises in real-time. By orchestrating a specialized crew of AI models using live internet validation, statistical fallback modeling, and authoritative data sources, the system generates actionable intelligence for decision-makers.
+---
+
+LIVE LINK : https://crisis-decision-system.vercel.app/
 
 ---
 
